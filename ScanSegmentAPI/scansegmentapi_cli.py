@@ -101,13 +101,13 @@ def acquerir_frame(nb_segments=30):
 
 
 if __name__ == "__main__":
-    intervalle = 0.5  # secondes entre deux acquisitions
+    intervalle = 0.1  # secondes entre deux acquisitions
 
     # Grand tableau contenant les 400 acquisitions
     acquisitions = []   # => liste de 400 sous-listes
 
     try:
-        for k in range(0, 400):   # 0 à 399 inclus
+        for k in range(0, 800):   # 0 à 399 inclus
             tableau = acquerir_frame(nb_segments=30)  # Renvoie une liste de tuples (angle, distance)
 
             angle_rotation_moteur = 0.9 * k
@@ -140,7 +140,7 @@ def generer_json_multi(acquisitions):
             })
     return json.dumps(all_data, indent=4)
 
-acqui_filtre=filtrer_lidar_par_seuil(acquisitions,250)
+acqui_filtre=filtrer_lidar_par_seuil(acquisitions,350)
 json_resultat = generer_json_multi(acqui_filtre)
 with open("lidar_data.json", "w") as f:
     f.write(json_resultat)
