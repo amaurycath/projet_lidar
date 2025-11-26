@@ -5,7 +5,7 @@
 PORT = 2115
 
 # If UDP is configured this should be the IP of the receiver.
-# If TCP is configured this should be the IP of the SICK device.
+# If TCP is configured this should be the IP of the SICK deviceeeee.
 IP = "192.168.0.100"
 
 # Select with which transport protocol the data should be received. Select "TCP" or "UDP".
