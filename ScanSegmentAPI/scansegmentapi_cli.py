@@ -20,8 +20,11 @@ from collections import defaultdict
 import time
 import serial # Communication avec Arduino
 import json
-
-arduino = serial.Serial('COM4', 9600, timeout=1) # COM9 à modifier selon le port utilisé
+import nuage
+import  open3d as o3d
+import simulation
+import matplotlib.pyplot as plt
+arduino = serial.Serial('COM5', 9600, timeout=1) # COM9 à modifier selon le port utilisé
 
 # Fonction pour envoyer une commande à l'Arduino
 def send_command(command):
@@ -103,11 +106,11 @@ def acquerir_frame(nb_segments=30):
 if __name__ == "__main__":
     intervalle = 0.1  # secondes entre deux acquisitions
 
-    # Grand tableau contenant les 400 acquisitions
-    acquisitions = []   # => liste de 400 sous-listes
+    # Grand tableau contenant les 800 acquisitions
+    acquisitions = []   # => liste de 800 sous-listes
 
     try:
-        for k in range(0, 800):   # 0 à 399 inclus
+        for k in range(0, 1):   # 0 à 799 inclus
             tableau = acquerir_frame(nb_segments=30)  # Renvoie une liste de tuples (angle, distance)
 
             angle_rotation_moteur = 0.9 * k
@@ -140,9 +143,37 @@ def generer_json_multi(acquisitions):
             })
     return json.dumps(all_data, indent=4)
 
-acqui_filtre=filtrer_lidar_par_seuil(acquisitions,350)
+
+acqui_filtre=filtrer_lidar_par_seuil(acquisitions,235)
 json_resultat = generer_json_multi(acqui_filtre)
 with open("lidar_data.json", "w") as f:
     f.write(json_resultat)
-print(acqui_filtre)
+#print(acqui_filtre)
 arduino.close() #Ferme le port
+def fusion(fichier):
+    points = nuage.données(fichier)
+    points = nuage.nuage(points, D=216, plot=True)
+    plt.show()
+    print("\n--- Génération du nuage de points ---")
+    pts = points
+
+    # Création du point cloud Open3D
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(pts)
+
+    print("Affichage du nuage de points…")
+    o3d.visualization.draw_geometries([pcd])
+
+    print("\n--- Reconstruction du maillage (BPA) ---")
+    mesh = simulation.reconstruct_mesh_from_point_cloud(
+        pts,
+        method="bpa",     # stable
+        voxel_size=0.01   # optionnel
+    )
+
+    print("Affichage du maillage…")
+    o3d.visualization.draw_geometries([mesh])
+
+    # Pour sauvegarder le maillage :
+    # o3d.io.write_triangle_mesh("mesh_test.stl", mesh)
+#fusion("lidar_data.json")
